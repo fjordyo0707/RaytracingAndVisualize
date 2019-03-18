@@ -5,12 +5,11 @@
 using namespace std;
 using namespace cv;
 
-void readFile(string, Scene&);
+Scene readFile(string);
 
 int main(int argc, char** argv )
 {
-    Scene myScene;
-    readFile(argv[1], myScene);
+    Scene myScene = readFile(argv[1]);
     myScene.startRay();
     cout<<"Save Image at "<<argv[2]<<endl;
     Mat savedImage = myScene.getImage();
@@ -19,9 +18,12 @@ int main(int argc, char** argv )
     return 0;
 }
 
-void readFile(string filename, Scene& myScene){
+Scene readFile(string filename){
     ifstream file;
     file.open(filename,ios::in);
+    SceneParameter sceneInfoTemp;
+    vector<Sphere> sphereBufferTemp;
+    vector<Triangle> triangleBufferTemp;
     
     if(!file.is_open()){
         cerr<<"File could not be opened"<<endl;
@@ -29,16 +31,33 @@ void readFile(string filename, Scene& myScene){
     }
     else{
         string fileStr;
-        SceneParameter sceneInfoTemp;
-        vector<Sphere> sphereBufferTemp;
-        vector<Triangle> triangleBufferTemp;
+        Material materialTemp = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
         while ( file>>fileStr ){
             if(fileStr=="E"){
                 file>>sceneInfoTemp.eye.x;
                 file>>sceneInfoTemp.eye.y;
                 file>>sceneInfoTemp.eye.z;
-            }
-            else if(fileStr=="O"){
+            } else if(fileStr=="V"){
+                sceneInfoTemp.viewDir = Mat(3,1,CV_32F); //Mat::zeros(3,1,CV_32F);
+                sceneInfoTemp.viewUp = Mat(3,1,CV_32F);  //Mat::zeros(3,1,CV_32F);
+                file>>sceneInfoTemp.viewDir.at<float>(0,0);
+                file>>sceneInfoTemp.viewDir.at<float>(1,0);
+                file>>sceneInfoTemp.viewDir.at<float>(2,0);
+                file>>sceneInfoTemp.viewUp.at<float>(0,0);
+                file>>sceneInfoTemp.viewUp.at<float>(1,0);
+                file>>sceneInfoTemp.viewUp.at<float>(2,0);
+            } else if(fileStr=="F"){
+                file>>sceneInfoTemp.angle;
+            } else if(fileStr=="M"){
+                file>>materialTemp.r;
+                file>>materialTemp.g;
+                file>>materialTemp.b;
+                file>>materialTemp.ka;
+                file>>materialTemp.kd;
+                file>>materialTemp.ks;
+                file>>materialTemp.exp;
+                file>>materialTemp.reflect;
+            } else if(fileStr=="O"){
                 file>>sceneInfoTemp.outputImagePoint1.x;
                 file>>sceneInfoTemp.outputImagePoint1.y;
                 file>>sceneInfoTemp.outputImagePoint1.z;
@@ -54,6 +73,7 @@ void readFile(string filename, Scene& myScene){
                 file>>S_temp.core.y;
                 file>>S_temp.core.z;
                 file>>S_temp.radius;
+                S_temp.myMaterial = materialTemp;
                 sphereBufferTemp.push_back(S_temp);
             } else if(fileStr=="T"){
                 Triangle Tri_temp;
@@ -66,13 +86,17 @@ void readFile(string filename, Scene& myScene){
                 file>>Tri_temp.vertex3.x;
                 file>>Tri_temp.vertex3.y;
                 file>>Tri_temp.vertex3.z;
+                Tri_temp.myMaterial = materialTemp;
                 triangleBufferTemp.push_back(Tri_temp);
+            } else if(fileStr=="L"){
+                file>>sceneInfoTemp.light.x;
+                file>>sceneInfoTemp.light.y;
+                file>>sceneInfoTemp.light.z;
             }
         }
-        myScene.setSceneInfo( sceneInfoTemp );
-        myScene.setSphereBuffer( sphereBufferTemp );
-        myScene.setTriangleBuffer( triangleBufferTemp );
-        myScene.setImage();
     }
     file.close();
+
+    Scene tempScene(sceneInfoTemp, sphereBufferTemp, triangleBufferTemp);
+    return tempScene;
 }
