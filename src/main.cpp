@@ -1,11 +1,11 @@
 #include <iostream>
 #include <fstream>
-#include "Raytracing.h"
+#include "Scene.h"
 
 using namespace std;
 using namespace cv;
 
-Scene readFile(string);
+Scene& readFile(string);
 
 int main(int argc, char** argv )
 {
@@ -18,7 +18,7 @@ int main(int argc, char** argv )
     return 0;
 }
 
-Scene readFile(string filename){
+Scene& readFile(string filename){
     ifstream file;
     file.open(filename,ios::in);
     SceneParameter sceneInfoTemp;
@@ -38,8 +38,8 @@ Scene readFile(string filename){
                 file>>sceneInfoTemp.eye.y;
                 file>>sceneInfoTemp.eye.z;
             } else if(fileStr=="V"){
-                sceneInfoTemp.viewDir = Mat(3,1,CV_32F); //Mat::zeros(3,1,CV_32F);
-                sceneInfoTemp.viewUp = Mat(3,1,CV_32F);  //Mat::zeros(3,1,CV_32F);
+                sceneInfoTemp.viewDir = Mat(3,1,CV_32F);
+                sceneInfoTemp.viewUp = Mat(3,1,CV_32F);
                 file>>sceneInfoTemp.viewDir.at<float>(0,0);
                 file>>sceneInfoTemp.viewDir.at<float>(1,0);
                 file>>sceneInfoTemp.viewDir.at<float>(2,0);
@@ -97,6 +97,6 @@ Scene readFile(string filename){
     }
     file.close();
 
-    Scene tempScene(sceneInfoTemp, sphereBufferTemp, triangleBufferTemp);
+    static Scene tempScene(sceneInfoTemp, sphereBufferTemp, triangleBufferTemp);
     return tempScene;
 }

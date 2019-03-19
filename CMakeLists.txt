@@ -21,7 +21,8 @@ include_directories(
 )
 
 set(ray_SOURCE_FILES
-  ${PROJECT_SOURCE_DIR}/src/Raytracing.cpp
+  ${PROJECT_SOURCE_DIR}/src/Scene.cpp
+  ${PROJECT_SOURCE_DIR}/src/Ray.cpp
 )
 
 
