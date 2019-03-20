@@ -8,18 +8,25 @@ using namespace cv;
 
 vector<Sphere> Ray::sphereBuffer;
 vector<Triangle> Ray::triangleBuffer;
+cv::Point3f Ray::eye;
+cv::Point3f Ray::light;
 
-Ray::Ray(vector<Sphere>& sphereB, vector<Triangle>& triangleB){
+Ray::Ray(vector<Sphere>& sphereB, vector<Triangle>& triangleB, Point3f eye_, Point3f light_){
     Ray::sphereBuffer = sphereB;
     Ray::triangleBuffer = triangleB;
+    Ray::eye = eye_;
+    Ray::light = light_;
 }
-Ray::Ray(Point3f rayOrigin_, Point3f rayVector_, bool isHit_){
+Ray::Ray(Point3f rayOrigin_, Point3f rayVector_, bool isHit_, bool init_){
     rayOrigin = rayOrigin_;
     rayVector = rayVector_;
     isHit = isHit_;
+    myHitPoint.init = init_;
 }
 
-void Ray::hitSphereOrTriangle(){
+vector<float> Ray::hitSphereOrTriangle(){
+    vector<float> RGBVector(3, 0.0f);
+    myHitPoint.normalVector = Mat(3,1,CV_32F);
     for(int k = 0; k<sphereBuffer.size(); k++){
         float a = pow(rayVector.x,2) + pow(rayVector.y,2) + pow(rayVector.z,2);
         float b = 2*(rayVector.x*(rayOrigin.x - sphereBuffer[k].core.x) + rayVector.y*(rayOrigin.y - sphereBuffer[k].core.y) + 
@@ -32,6 +39,34 @@ void Ray::hitSphereOrTriangle(){
 
         if( theta >= 0 &&( t1 >=0 || t2 >=0)){
             isHit = true;
+            if( t1<=t2 ){
+                myHitPoint.tScale = t1;
+            } else{
+                myHitPoint.tScale = t2;
+            }
+
+            if( myHitPoint.init == false){
+                myHitPoint.tScaleMin = myHitPoint.tScale;
+                myHitPoint.init = true;             
+                myHitPoint.thePoint.x = rayOrigin.x+ myHitPoint.tScaleMin*rayVector.x;
+                myHitPoint.thePoint.y = rayOrigin.y+ myHitPoint.tScaleMin*rayVector.y;
+                myHitPoint.thePoint.z = rayOrigin.z+ myHitPoint.tScaleMin*rayVector.z;
+                myHitPoint.normalVector.at<float>(0,0) = myHitPoint.thePoint.x - sphereBuffer[k].core.x;
+                myHitPoint.normalVector.at<float>(1,0) = myHitPoint.thePoint.y - sphereBuffer[k].core.y;
+                myHitPoint.normalVector.at<float>(2,0) = myHitPoint.thePoint.z - sphereBuffer[k].core.z;
+                normalize(myHitPoint.normalVector, myHitPoint.normalVector);
+                myHitPoint.myMaterial = sphereBuffer[k].myMaterial;
+            } else if(myHitPoint.tScale<myHitPoint.tScaleMin){
+                myHitPoint.tScaleMin = myHitPoint.tScale;
+                myHitPoint.thePoint.x = rayOrigin.x+ myHitPoint.tScaleMin*rayVector.x;
+                myHitPoint.thePoint.y = rayOrigin.y+ myHitPoint.tScaleMin*rayVector.y;
+                myHitPoint.thePoint.z = rayOrigin.z+ myHitPoint.tScaleMin*rayVector.z;
+                myHitPoint.normalVector.at<float>(0,0) = myHitPoint.thePoint.x - sphereBuffer[k].core.x;
+                myHitPoint.normalVector.at<float>(1,0) = myHitPoint.thePoint.y - sphereBuffer[k].core.y;
+                myHitPoint.normalVector.at<float>(2,0) = myHitPoint.thePoint.z - sphereBuffer[k].core.z;
+                normalize(myHitPoint.normalVector, myHitPoint.normalVector);
+                myHitPoint.myMaterial = sphereBuffer[k].myMaterial;
+            }
         }
     }
 
@@ -54,9 +89,74 @@ void Ray::hitSphereOrTriangle(){
 
         if (determinant(m) != 0){
             Mat ans = m.inv()*left;
-            if((ans.at<float>(0,0)>=0) && (ans.at<float>(1,0)>=0) && (ans.at<float>(0,0)+ans.at<float>(1,0)<=1) && ans.at<float>(2,0)>0){
+            float t = ans.at<float>(2,0);
+            if((ans.at<float>(0,0)>=0) && (ans.at<float>(1,0)>=0) && (ans.at<float>(0,0)+ans.at<float>(1,0)<=1) && t>0){
                 isHit = true;
+                myHitPoint.tScale = t;
+                if( myHitPoint.init == false){
+                    myHitPoint.tScaleMin = myHitPoint.tScale;
+                    myHitPoint.init = true;
+                    myHitPoint.thePoint.x = rayOrigin.x+ myHitPoint.tScaleMin*rayVector.x;
+                    myHitPoint.thePoint.y = rayOrigin.y+ myHitPoint.tScaleMin*rayVector.y;
+                    myHitPoint.thePoint.z = rayOrigin.z+ myHitPoint.tScaleMin*rayVector.z;
+                    Mat v1(3,1,CV_32F);
+                    Mat v2(3,1,CV_32F);
+                    v1.at<float>(0,0) = m.at<float>(0,0);
+                    v1.at<float>(1,0) = m.at<float>(1,0);
+                    v1.at<float>(2,0) = m.at<float>(2,0);
+                    v2.at<float>(0,0) = m.at<float>(0,1);
+                    v2.at<float>(1,0) = m.at<float>(1,1);
+                    v2.at<float>(2,0) = m.at<float>(2,1);                   
+                    myHitPoint.normalVector = v1.cross(v2);
+                    myHitPoint.myMaterial = triangleBuffer[k].myMaterial;
+                } else if(myHitPoint.tScale<myHitPoint.tScaleMin){
+                    myHitPoint.tScaleMin = myHitPoint.tScale;
+                    Mat v1(3,1,CV_32F);
+                    Mat v2(3,1,CV_32F);
+                    myHitPoint.thePoint.x = rayOrigin.x+ myHitPoint.tScaleMin*rayVector.x;
+                    myHitPoint.thePoint.y = rayOrigin.y+ myHitPoint.tScaleMin*rayVector.y;
+                    myHitPoint.thePoint.z = rayOrigin.z+ myHitPoint.tScaleMin*rayVector.z;
+                    v1.at<float>(0,0) = m.at<float>(0,0);
+                    v1.at<float>(1,0) = m.at<float>(1,0);
+                    v1.at<float>(2,0) = m.at<float>(2,0);
+                    v2.at<float>(0,0) = m.at<float>(0,1);
+                    v2.at<float>(1,0) = m.at<float>(1,1);
+                    v2.at<float>(2,0) = m.at<float>(2,1);
+                    myHitPoint.normalVector = v1.cross(v2);
+                    myHitPoint.myMaterial = triangleBuffer[k].myMaterial;
+                }
             }
         }
     }
+    if(isHit==true){
+        cout<<"Hit Point is "<<myHitPoint.thePoint<<endl;
+        cout<<"NormalVector"<<myHitPoint.normalVector<<endl;
+        cout<<"RGB is :"<<myHitPoint.myMaterial.r<<" "<<myHitPoint.myMaterial.g<<" "<<myHitPoint.myMaterial.b<<endl;
+        cout<<"Eye place is : "<<Ray::eye<<endl;
+        cout<<"Light place is : "<<Ray::light<<endl;
+        Vec3f lightVector(myHitPoint.thePoint.x - Ray::light.x, myHitPoint.thePoint.y - Ray::light.y,
+                    myHitPoint.thePoint.z - Ray::light.z);
+        Vec3f Ia(myHitPoint.myMaterial.r, myHitPoint.myMaterial.g, myHitPoint.myMaterial.b);
+        Vec3f NdotL;//= myHitPoint.normalVector.mul(lightVector);
+        multiply(myHitPoint.normalVector, lightVector, NdotL);
+        float absNdotL = NdotL[0]+NdotL[1]+NdotL[2];
+        cout<<"lightVector : "<<lightVector<<endl;
+        cout<<"absNdotL : "<<absNdotL<<endl<<endl;;
+    }
+    return RGBVector;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

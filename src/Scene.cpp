@@ -44,9 +44,10 @@ Mat Scene::getImage(){
 }
 
 void Scene::startRay(){
-    Ray setArgumentRay(sphereBuffer, triangleBuffer);
+    Ray setArgumentRay(sphereBuffer, triangleBuffer, sceneInfo.eye, sceneInfo.light);
     for(int i = 0; i<sceneInfo.resolution.y; i++){
         for(int j = 0; j<sceneInfo.resolution.x; j++){
+            //cout<<"** Pixel(y,x) is: "<<i<<" "<<j<<endl;
             Point3f vectorRay;
             vectorRay.x = sceneInfo.outputImagePoint1.x +
                     (sceneInfo.outputImagePoint2.x - sceneInfo.outputImagePoint1.x)*j/sceneInfo.resolution.x - sceneInfo.eye.x;
@@ -54,8 +55,8 @@ void Scene::startRay(){
                     (sceneInfo.outputImagePoint2.y - sceneInfo.outputImagePoint1.y)*i/sceneInfo.resolution.y - sceneInfo.eye.y;
             vectorRay.z = sceneInfo.outputImagePoint1.z - sceneInfo.eye.z;
 
-            Ray pixelRay(sceneInfo.eye, vectorRay, false);
-            pixelRay.hitSphereOrTriangle();
+            Ray pixelRay(sceneInfo.eye, vectorRay, false, false);
+            vector<float>outputRGB =  pixelRay.hitSphereOrTriangle();
             if(pixelRay.isHit==true){
                 image.at<uchar>(i,j) = 255;
             }
