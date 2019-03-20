@@ -43,7 +43,7 @@ $ cd build
 $ cmake ..
 $ make
 $ ./bin/output <path/to/input.txt> <path/to/output.png> 
-# For example : $ ./bin/output ../test/input.txt ./output.png
+# For example : $ ./bin/output ../test/mytest.txt ./output.png
 ```
 ##### Win (not recommend)
 

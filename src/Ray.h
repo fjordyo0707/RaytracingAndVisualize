@@ -39,6 +39,6 @@ private:
 public:
     Ray(std::vector<Sphere>&, std::vector<Triangle>&, cv::Point3f, cv::Point3f);
     Ray(cv::Point3f, cv::Point3f, bool, bool);
-    std::vector<float> hitSphereOrTriangle();
+    cv::Mat hitSphereOrTriangle();
     bool isHit;
 };

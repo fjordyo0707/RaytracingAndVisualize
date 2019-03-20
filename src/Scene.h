@@ -14,9 +14,11 @@ public:
     Scene(SceneParameter&, std::vector<Sphere>&, std::vector<Triangle>&);
     void startRay( void );
     void setImage( void );
-    cv::Mat getImage();
+    cv::Mat getHitImage();
+    cv::Mat getColorImage();
 private:
     cv::Mat image;
+    cv::Mat colorImage;
     SceneParameter sceneInfo;
 protected:
     std::vector<Sphere> sphereBuffer;

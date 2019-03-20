@@ -12,7 +12,7 @@ int main(int argc, char** argv )
     Scene myScene = readFile(argv[1]);
     myScene.startRay();
     cout<<"Save Image at "<<argv[2]<<endl;
-    Mat savedImage = myScene.getImage();
+    Mat savedImage = myScene.getColorImage();
     imwrite(argv[2], savedImage);
     
     return 0;
