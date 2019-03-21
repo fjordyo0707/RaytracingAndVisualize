@@ -66,8 +66,8 @@ void Scene::startRay(){
             colorImage.at<Vec3b>(i,j)[1] = outputRGB.at<uchar>(0,1);
             colorImage.at<Vec3b>(i,j)[2] = outputRGB.at<uchar>(0,2);
             if(pixelRay.isHit==true){
-                cout<<"** Pixel(y,x) is: "<<i<<" "<<j<<endl;
-                cout<<colorImage.at<Vec3b>(i,j)<<endl;
+                //cout<<"** Pixel(y,x) is: "<<i<<" "<<j<<endl;
+                //cout<<colorImage.at<Vec3b>(i,j)<<endl;
                 image.at<uchar>(i,j) = 255;
             }
             else{

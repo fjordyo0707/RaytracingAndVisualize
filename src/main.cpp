@@ -13,6 +13,7 @@ int main(int argc, char** argv )
     myScene.startRay();
     cout<<"Save Image at "<<argv[2]<<endl;
     Mat savedImage = myScene.getColorImage();
+    cvtColor(savedImage, savedImage, COLOR_BGR2RGB);
     imwrite(argv[2], savedImage);
     
     return 0;
