@@ -27,7 +27,7 @@ Ray::Ray(Point3f rayOrigin_, Point3f rayVector_, bool isHit_, bool init_, bool i
 }
 
 Mat Ray::phongShading(){
-    Mat RGBVector = Mat::ones(1,3, CV_8UC1);
+    Mat RGBVector = Mat::zeros(1,3, CV_8UC1);
     myHitPoint.normalVector = Mat(3,1,CV_32F);
     for(int k = 0; k<sphereBuffer.size(); k++){
         float a = pow(rayVector.x,2) + pow(rayVector.y,2) + pow(rayVector.z,2);
@@ -39,7 +39,7 @@ Mat Ray::phongShading(){
         float t1 = (-b+sqrt(theta))/(2*a);
         float t2 = (-b-sqrt(theta))/(2*a);
 
-        if( theta >= 0 &&( t1 >0 || t2 >0)){
+        if( theta >= 0 &&( t1 >0.001 || t2 >0.001)){
             isHit = true;
             if( t1<=t2 ){
                 myHitPoint.tScale = t1;
@@ -90,7 +90,7 @@ Mat Ray::phongShading(){
         if (determinant(m) != 0){
             Mat ans = m.inv()*left;
             float t = ans.at<float>(2,0);
-            if((ans.at<float>(0,0)>=0) && (ans.at<float>(1,0)>=0) && (ans.at<float>(0,0)+ans.at<float>(1,0)<=1) && t>0){
+            if((ans.at<float>(0,0)>=0) && (ans.at<float>(1,0)>=0) && (ans.at<float>(0,0)+ans.at<float>(1,0)<=1) && t>0.001){
                 isHit = true;
                 myHitPoint.tScale = t;
                 if( myHitPoint.init == false){
@@ -137,29 +137,33 @@ Mat Ray::phongShading(){
         Vec3f thisRayRGB;
         Vec3f vecNormal((float*)myHitPoint.normalVector.data);
         checkShadow();   
-        float absNdotL, absNdotH;     
+        float absNdotL, absNdotH;
+        normalize(eyeVector,eyeVector);
+        normalize(lightVector,lightVector);
+        normalize(vecNormal,vecNormal); 
         if(isShadow==true){
             Id = 0;
             Is = 0;
-        }else{
-            normalize(eyeVector,eyeVector);
-            normalize(lightVector,lightVector);
-            normalize(vecNormal,vecNormal);
+        } else{
             absNdotL = abs(myDot(vecNormal, lightVector));
             Id = absNdotL*Ia;
             H = lightVector+eyeVector;
             absNdotH = abs(myDot(vecNormal, H));
             Is = pow(absNdotH,myHitPoint.myMaterial.exp)*Ia;
-        }/*
-        float eyeProjectToNormalScale = myDot(vecNormal, eyeVector);
-        Vec3f eyeProjectToNormal = eyeProjectToNormalScale*vecNormal;
-        Vec3f reflectEyeVector = eyeVector+ 2*(eyeProjectToNormal-eyeVector);
-        Ray recursiveRay(myHitPoint.thePoint, reflectEyeVector, false, false, false);
-        Mat recursiveRGB =  recursiveRay.phongShading();
-        cout<<recursiveRGB<<endl;*/
+        }
 
-        thisRayRGB = myHitPoint.myMaterial.ka*Ia + myHitPoint.myMaterial.kd*Id + myHitPoint.myMaterial.ks*Is;
+        Vec3f rayVectorforRec(rayVector.x, rayVector.y, rayVector.z);
+        normalize(rayVectorforRec, rayVectorforRec); 
+        float rayProjectToNormalScale = myDot(vecNormal, rayVectorforRec);
+        Vec3f rayProjectToNormal = -1*(rayProjectToNormalScale*vecNormal);
+        Vec3f reflectEyeVector = -1*rayVectorforRec+ 2*(rayProjectToNormal+rayVectorforRec);
+        Point3f tempRay(reflectEyeVector[0], reflectEyeVector[1], reflectEyeVector[2]);
+        Ray recursiveRay(myHitPoint.thePoint, tempRay, false, false, false);
+        Mat recursiveRGBMat =  recursiveRay.phongShading();
 
+        Vec3f recursiveRGB(recursiveRGBMat.at<uchar>(0,0)/255.0, recursiveRGBMat.at<uchar>(0,1)/255.0, recursiveRGBMat.at<uchar>(0,2)/255.0);
+        thisRayRGB = (1- myHitPoint.myMaterial.reflect)*(myHitPoint.myMaterial.ka*Ia + myHitPoint.myMaterial.kd*Id + myHitPoint.myMaterial.ks*Is)
+                        + myHitPoint.myMaterial.reflect*recursiveRGB;
         if(thisRayRGB[0]>1.0){
             thisRayRGB[0] = 1.0f;
         }
@@ -238,19 +242,3 @@ float myDot(Vec3f a, Vec3f b){
     float ouptut = c[0]+c[1]+c[2];
     return ouptut;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
