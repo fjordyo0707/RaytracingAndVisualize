@@ -1,6 +1,6 @@
-# ACG assignment1
+# Raytracing using OpenCV
 
-Student ID: B04901190 Name: 范晟祐
+Author: 范晟祐
 
 ### Dependencies
 
@@ -28,7 +28,7 @@ $ sudo apt-get install libopencv-dev python-opencv
 
 ##### Windows
 
-Go here [Cmake](https://cmake.org/download/) to install.
+Go here [Cmake](https://cmake.org/download/) to install cmake.
 
 Install OpenCV depend on your IDE or compiler.
 
@@ -43,11 +43,12 @@ $ cd build
 $ cmake ..
 $ make
 $ ./bin/output <path/to/input.txt> <path/to/output.png> 
-# For example : $ ./bin/output ../test/mytest.txt ./output.png
+# For example : $ ./bin/output ../test/mytest.txt ../img/output.png
 ```
 ##### Win (not recommend)
 
+(Optional) Download the prebuild OpenCV and use Visual Studio
+
 1. Open your IDE
 2. Set OpenCV to your path environment
-3. Link by yourself
-4. (Optional) Download the prebuild OpenCV and use Visual Studio 
+3. Link 

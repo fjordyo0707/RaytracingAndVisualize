@@ -38,7 +38,8 @@ private:
     static std::vector<Triangle> triangleBuffer;
 public:
     Ray(std::vector<Sphere>&, std::vector<Triangle>&, cv::Point3f, cv::Point3f);
-    Ray(cv::Point3f, cv::Point3f, bool, bool);
-    cv::Mat hitSphereOrTriangle();
-    bool isHit;
+    Ray(cv::Point3f, cv::Point3f, bool, bool, bool);
+    cv::Mat phongShading();
+    bool isHit, isShadow;
+    void checkShadow();
 };

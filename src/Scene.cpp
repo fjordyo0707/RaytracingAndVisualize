@@ -59,8 +59,8 @@ void Scene::startRay(){
                     (sceneInfo.outputImagePoint2.y - sceneInfo.outputImagePoint1.y)*i/sceneInfo.resolution.y - sceneInfo.eye.y;
             vectorRay.z = sceneInfo.outputImagePoint1.z - sceneInfo.eye.z;
 
-            Ray pixelRay(sceneInfo.eye, vectorRay, false, false);
-            Mat outputRGB =  pixelRay.hitSphereOrTriangle();
+            Ray pixelRay(sceneInfo.eye, vectorRay, false, false, false);
+            Mat outputRGB =  pixelRay.phongShading();
             //cout<<"outputRGB "<<i<<" "<<j<<outputRGB<<endl;
             colorImage.at<Vec3b>(i,j)[0] = outputRGB.at<uchar>(0,0);
             colorImage.at<Vec3b>(i,j)[1] = outputRGB.at<uchar>(0,1);

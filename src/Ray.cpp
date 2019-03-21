@@ -17,14 +17,15 @@ Ray::Ray(vector<Sphere>& sphereB, vector<Triangle>& triangleB, Point3f eye_, Poi
     Ray::eye = eye_;
     Ray::light = light_;
 }
-Ray::Ray(Point3f rayOrigin_, Point3f rayVector_, bool isHit_, bool init_){
+Ray::Ray(Point3f rayOrigin_, Point3f rayVector_, bool isHit_, bool init_, bool isShadow_){
     rayOrigin = rayOrigin_;
     rayVector = rayVector_;
     isHit = isHit_;
     myHitPoint.init = init_;
+    isShadow = isShadow_;
 }
 
-Mat Ray::hitSphereOrTriangle(){
+Mat Ray::phongShading(){
     Mat RGBVector = Mat::ones(1,3, CV_8UC1);
     myHitPoint.normalVector = Mat(3,1,CV_32F);
     for(int k = 0; k<sphereBuffer.size(); k++){
@@ -34,10 +35,10 @@ Mat Ray::hitSphereOrTriangle(){
         float c = pow((rayOrigin.x - sphereBuffer[k].core.x), 2) + pow((rayOrigin.y - sphereBuffer[k].core.y),2) + 
         pow((rayOrigin.z - sphereBuffer[k].core.z),2) - pow(sphereBuffer[k].radius,2);
         float theta = pow(b,2)-4*a*c;
-        float t1 = -b+sqrt(theta)/(2*a);
-        float t2 = -b-sqrt(theta)/(2*a);
+        float t1 = (-b+sqrt(theta))/(2*a);
+        float t2 = (-b-sqrt(theta))/(2*a);
 
-        if( theta >= 0 &&( t1 >=0 || t2 >=0)){
+        if( theta >= 0 &&( t1 >0 || t2 >0)){
             isHit = true;
             if( t1<=t2 ){
                 myHitPoint.tScale = t1;
@@ -54,7 +55,6 @@ Mat Ray::hitSphereOrTriangle(){
                 myHitPoint.normalVector.at<float>(0,0) = myHitPoint.thePoint.x - sphereBuffer[k].core.x;
                 myHitPoint.normalVector.at<float>(1,0) = myHitPoint.thePoint.y - sphereBuffer[k].core.y;
                 myHitPoint.normalVector.at<float>(2,0) = myHitPoint.thePoint.z - sphereBuffer[k].core.z;
-                normalize(myHitPoint.normalVector, myHitPoint.normalVector);
                 myHitPoint.myMaterial = sphereBuffer[k].myMaterial;
             } else if(myHitPoint.tScale<myHitPoint.tScaleMin){
                 myHitPoint.tScaleMin = myHitPoint.tScale;
@@ -64,7 +64,6 @@ Mat Ray::hitSphereOrTriangle(){
                 myHitPoint.normalVector.at<float>(0,0) = myHitPoint.thePoint.x - sphereBuffer[k].core.x;
                 myHitPoint.normalVector.at<float>(1,0) = myHitPoint.thePoint.y - sphereBuffer[k].core.y;
                 myHitPoint.normalVector.at<float>(2,0) = myHitPoint.thePoint.z - sphereBuffer[k].core.z;
-                normalize(myHitPoint.normalVector, myHitPoint.normalVector);
                 myHitPoint.myMaterial = sphereBuffer[k].myMaterial;
             }
         }
@@ -129,33 +128,34 @@ Mat Ray::hitSphereOrTriangle(){
         }
     }
     if(isHit==true){
-        //cout<<myHitPoint.myMaterial.r<<" "<<myHitPoint.myMaterial.g<<" "<<myHitPoint.myMaterial.b<<endl;
         Vec3f lightVector(Ray::light.x - myHitPoint.thePoint.x, Ray::light.y - myHitPoint.thePoint.y,
                     Ray::light.z - myHitPoint.thePoint.z);
-        //Vec3f lightVector(Ray::light.x , Ray::light.y , Ray::light.z);
         Vec3f Ia(myHitPoint.myMaterial.r, myHitPoint.myMaterial.g, myHitPoint.myMaterial.b);
-        Vec3f NdotL, LdotV;//= myHitPoint.normalVector.mul(lightVector);
+        Vec3f eyeVector(Ray::eye.x - myHitPoint.thePoint.x, Ray::eye.y - myHitPoint.thePoint.y, Ray::eye.z - myHitPoint.thePoint.z);
+        Vec3f NdotL, NdotH;
+        Vec3f Id, H, Is;
+        Vec3f thisRayRGB;
+        float absNdotL, absNdotH;
+        checkShadow();
+        normalize(myHitPoint.normalVector, myHitPoint.normalVector);
         normalize(lightVector,lightVector);
         normalize(myHitPoint.normalVector,myHitPoint.normalVector);
-        multiply(-1*myHitPoint.normalVector, lightVector, NdotL);
-        float absNdotL = abs(NdotL[0]+NdotL[1]+NdotL[2]);
-        /*
-        float absNdotL = 0;
-        if((NdotL[0]+NdotL[1]+NdotL[2])>0){
-            absNdotL = NdotL[0]+NdotL[1]+NdotL[2];
-        }*/
-        Vec3f Id = absNdotL*Ia;
-
-        Vec3f eyeVector(Ray::eye.x - myHitPoint.thePoint.x, Ray::eye.y - myHitPoint.thePoint.y, Ray::eye.z - myHitPoint.thePoint.z);
         normalize(eyeVector,eyeVector);
-        Vec3f H = lightVector+eyeVector;
+        multiply(-1*myHitPoint.normalVector, lightVector, NdotL);
+        absNdotL = abs(NdotL[0]+NdotL[1]+NdotL[2]);
+        Id = absNdotL*Ia;
+        H = lightVector+eyeVector;
         normalize(H,H);
-        Vec3f NdotH;
         multiply(myHitPoint.normalVector, H, NdotH);
-        float absNdotH = abs(NdotH[0]+NdotH[1]+NdotH[2]);
-        Vec3f Is = pow(absNdotH,myHitPoint.myMaterial.exp)*Ia;
-
-        Vec3f thisRayRGB = myHitPoint.myMaterial.ka*Ia + myHitPoint.myMaterial.kd*Id + myHitPoint.myMaterial.ks*Is;
+        absNdotH = abs(NdotH[0]+NdotH[1]+NdotH[2]);
+        Is = pow(absNdotH,myHitPoint.myMaterial.exp)*Ia;
+        if(isShadow==true){
+            Id = 0;
+            Is = 0;
+        } else{
+            //Ray recursiveRay(myHitPoint.thePoint, vectorRay, false, false, false);
+        }
+        thisRayRGB = myHitPoint.myMaterial.ka*Ia + myHitPoint.myMaterial.kd*Id + myHitPoint.myMaterial.ks*Is;
 
         if(thisRayRGB[0]>1.0){
             thisRayRGB[0] = 1.0f;
@@ -171,6 +171,60 @@ Mat Ray::hitSphereOrTriangle(){
         RGBVector.at<uchar>(0,2) = int(thisRayRGB[2]*255);
     }
     return RGBVector;
+}
+
+void Ray::checkShadow(){
+
+    Point3f pointToLight(Ray::light.x - myHitPoint.thePoint.x, Ray::light.y - myHitPoint.thePoint.y,
+                    Ray::light.z - myHitPoint.thePoint.z);
+    Point3f ckPoint =  myHitPoint.thePoint;
+
+    for(int k = 0; k<sphereBuffer.size(); k++){
+        float a = pow(pointToLight.x,2) + pow(pointToLight.y,2) + pow(pointToLight.z,2);
+        float b = 2*(pointToLight.x*(ckPoint.x - sphereBuffer[k].core.x) + pointToLight.y*(ckPoint.y - sphereBuffer[k].core.y) + 
+            pointToLight.z*(ckPoint.z - sphereBuffer[k].core.z));
+        float c = pow((ckPoint.x - sphereBuffer[k].core.x), 2) + pow((ckPoint.y - sphereBuffer[k].core.y),2) + 
+        pow((ckPoint.z - sphereBuffer[k].core.z),2) - pow(sphereBuffer[k].radius,2);
+        float theta = pow(b,2)-4*a*c;
+        float t1 = (-b+sqrt(theta))/(2*a);
+        float t2 = (-b-sqrt(theta))/(2*a);
+
+        if( theta >= 0 &&( t1 >0.001 || t2 >0.001)){
+            isShadow = true;
+            break;
+        }
+    }
+
+    for(int k = 0; k<triangleBuffer.size(); k++){
+        if(isShadow==true){
+            break;
+        }
+        Mat m(3,3,CV_32F);
+        m.at<float>(0,0) = triangleBuffer[k].vertex2.x - triangleBuffer[k].vertex1.x;
+        m.at<float>(0,1) = triangleBuffer[k].vertex3.x - triangleBuffer[k].vertex1.x;
+        m.at<float>(0,2) = -pointToLight.x;
+        m.at<float>(1,0) = triangleBuffer[k].vertex2.y - triangleBuffer[k].vertex1.y;
+        m.at<float>(1,1) = triangleBuffer[k].vertex3.y - triangleBuffer[k].vertex1.y;
+        m.at<float>(1,2) = -pointToLight.y;
+        m.at<float>(2,0) = triangleBuffer[k].vertex2.z - triangleBuffer[k].vertex1.z;
+        m.at<float>(2,1) = triangleBuffer[k].vertex3.z - triangleBuffer[k].vertex1.z;
+        m.at<float>(2,2) = -pointToLight.z;
+
+        Mat left(3,1,CV_32F);
+        left.at<float>(0,0) = ckPoint.x - triangleBuffer[k].vertex1.x;
+        left.at<float>(1,0) = ckPoint.y - triangleBuffer[k].vertex1.y;
+        left.at<float>(2,0) = ckPoint.z - triangleBuffer[k].vertex1.z;
+
+        if (determinant(m) != 0){
+            Mat ans = m.inv()*left;
+            float t = ans.at<float>(2,0);
+            if((ans.at<float>(0,0)>=0) && (ans.at<float>(1,0)>=0) && (ans.at<float>(0,0)+ans.at<float>(1,0)<=1) && t>0.001){
+                isShadow = true;
+                break;
+            }
+        }
+    }
+
 }
 
 
