@@ -22,9 +22,11 @@ Check Github: https://github.com/fjordyo0707/RaytracingAndVisualize
 #### Soft Shadow and Anti-aliasing
 ![alt text](https://raw.githubusercontent.com/fjordyo0707/RaytracingAndVisualize/master/img/softShadow.png)<br></br>
 
-#### Explantion for how I sample
+#### Explantion for how I sample and Runtime
 Anti-aliasing: For one pixel, I sample four ray and interpolate with bicubic method.<br></br>
 Soft Shahow: I sample 1000 points on a disc within a light sphere, and instead of setting Id to zero, I set it with Id*(1-{ratioOfShadow}) 
+The Runtime for this complicated image(mytest.txt) takes about 4 minutes on my laptop.<br></br>
+The simple image(input.txt) takes about 1~2 minutes.
 
 ## Install Denpendencies
 
@@ -56,7 +58,7 @@ Install OpenCV depend on your IDE or compiler.
 #### Notice
 1. This code does recursion until not hitting anything, so it may take some time if you have too many objects!<br></br>
 2. This code isn't fully optimized, so may look a bit dirty!<br></br> 
-3. Runtime will take 3~5 minutes!<br></br>
+3. Runtime will take few minutes!<br></br>
 
 #### Unix (recommend)
 
