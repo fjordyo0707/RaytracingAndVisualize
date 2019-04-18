@@ -3,7 +3,7 @@ project(ray)
 
 message( "PROJECT_SOURCE_DIR : " ${PROJECT_SOURCE_DIR} )
 message( "CMAKE_CURRENT_SOURCE_DIR : " ${CMAKE_CURRENT_SOURCE_DIR} )
-
+set(CMAKE_CXX_STANDARD 11)
 set(EXECUTABLE_OUTPUT_PATH bin)
 set(LIBRARY_OUTPUT_PATH lib)
 
@@ -23,6 +23,7 @@ include_directories(
 set(ray_SOURCE_FILES
   ${PROJECT_SOURCE_DIR}/src/Scene.cpp
   ${PROJECT_SOURCE_DIR}/src/Ray.cpp
+  ${PROJECT_SOURCE_DIR}/src/utils.cpp
 )
 
 

@@ -10,9 +10,13 @@ Scene& readFile(string);
 int main(int argc, char** argv )
 {
     Scene myScene = readFile(argv[1]);
+    //myScene.printInfo();
+    cout<<"Start Raytracing!"<<endl;
+    cout<<"**Wait for some time ..."<<endl;
     myScene.startRay();
     cout<<"Save Image at "<<argv[2]<<endl;
     Mat savedImage = myScene.getColorImage();
+    resize(savedImage, savedImage, cv::Size(), 0.5, 0.5, INTER_CUBIC);
     cvtColor(savedImage, savedImage, COLOR_BGR2RGB);
     imwrite(argv[2], savedImage);
     
@@ -90,9 +94,13 @@ Scene& readFile(string filename){
                 Tri_temp.myMaterial = materialTemp;
                 triangleBufferTemp.push_back(Tri_temp);
             } else if(fileStr=="L"){
-                file>>sceneInfoTemp.light.x;
-                file>>sceneInfoTemp.light.y;
-                file>>sceneInfoTemp.light.z;
+                Point3f temp_l;
+                file>>temp_l.x;
+                file>>temp_l.y;
+                file>>temp_l.z;
+                sceneInfoTemp.light = temp_l;
+                sceneInfoTemp.bulb.core = temp_l;
+                file>>sceneInfoTemp.bulb.radius;
             }
         }
     }

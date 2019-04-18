@@ -12,6 +12,8 @@ Scene::Scene(SceneParameter& sceneI , vector<Sphere>& sphereB, vector<Triangle>&
     sceneInfo = sceneI;
     sphereBuffer = sphereB;
     triangleBuffer = triangleB;
+    sceneInfo.resolution.y = sceneInfo.resolution.y*2;
+    sceneInfo.resolution.x = sceneInfo.resolution.x*2;
     Mat img1(sceneInfo.resolution.y , sceneInfo.resolution.x, CV_8U);
     image = img1;
     colorImage = Mat(sceneInfo.resolution.y, sceneInfo.resolution.x, CV_8UC3);
@@ -49,7 +51,7 @@ Mat Scene::getColorImage(){
 }
 
 void Scene::startRay(){
-    Ray setArgumentRay(sphereBuffer, triangleBuffer, sceneInfo.eye, sceneInfo.light);
+    Ray setArgumentRay(sphereBuffer, triangleBuffer, sceneInfo.eye, sceneInfo.light, sceneInfo.bulb.radius);
     for(int i = 0; i<sceneInfo.resolution.y; i++){
         for(int j = 0; j<sceneInfo.resolution.x; j++){
             Point3f vectorRay;
@@ -59,7 +61,7 @@ void Scene::startRay(){
                     (sceneInfo.outputImagePoint2.y - sceneInfo.outputImagePoint1.y)*i/sceneInfo.resolution.y - sceneInfo.eye.y;
             vectorRay.z = sceneInfo.outputImagePoint1.z - sceneInfo.eye.z;
 
-            Ray pixelRay(sceneInfo.eye, vectorRay, false, false, false);
+            Ray pixelRay(sceneInfo.eye, vectorRay, false, false, false, false);
             Mat outputRGB =  pixelRay.phongShading();
             colorImage.at<Vec3b>(i,j)[0] = outputRGB.at<uchar>(0,0);
             colorImage.at<Vec3b>(i,j)[1] = outputRGB.at<uchar>(0,1);
@@ -72,4 +74,11 @@ void Scene::startRay(){
             }
         }
     }
+}
+
+void Scene::printInfo(){
+	cout<<"Eye position: "<<sceneInfo.eye<<endl;
+	cout<<"Light position and radius: "<<sceneInfo.bulb.core<<" "<<sceneInfo.bulb.radius<<endl;
+	cout<<"View Direction: "<<sceneInfo.viewDir<<endl;
+	cout<<"Resolution: "<<sceneInfo.resolution<<endl;
 }

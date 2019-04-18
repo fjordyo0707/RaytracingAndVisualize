@@ -36,10 +36,12 @@ private:
     static cv::Point3f light;
     static std::vector<Sphere> sphereBuffer;
     static std::vector<Triangle> triangleBuffer;
+    static float lightRadius;
 public:
-    Ray(std::vector<Sphere>&, std::vector<Triangle>&, cv::Point3f, cv::Point3f);
-    Ray(cv::Point3f, cv::Point3f, bool, bool, bool);
+    Ray(std::vector<Sphere>&, std::vector<Triangle>&, cv::Point3f, cv::Point3f, float);
+    Ray(cv::Point3f, cv::Point3f, bool, bool, bool, bool);
     cv::Mat phongShading();
-    bool isHit, isShadow;
-    void checkShadow();
+    bool isHit, isShadow, isRecursiveRay;
+    bool checkShadow(cv::Point3f);
+    float softShadow(cv::Point3f);
 };

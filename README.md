@@ -2,6 +2,8 @@
 
 Author: 范晟祐
 
+Check Github: https://github.com/fjordyo0707/RaytracingAndVisualize
+
 ### Dependencies
 
 ##### OpenCV (version >3.0)

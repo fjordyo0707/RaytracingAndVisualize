@@ -7,6 +7,7 @@ struct SceneParameter{
     cv::Mat viewUp;
     cv::Point3f outputImagePoint1, outputImagePoint2;
     cv::Point resolution;
+    Sphere bulb; 
 };
 
 class Scene{
@@ -14,6 +15,7 @@ public:
     Scene(SceneParameter&, std::vector<Sphere>&, std::vector<Triangle>&);
     void startRay( void );
     void setImage( void );
+    void printInfo( void );
     cv::Mat getHitImage();
     cv::Mat getColorImage();
 private:
