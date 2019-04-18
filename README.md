@@ -19,10 +19,12 @@ Check Github: https://github.com/fjordyo0707/RaytracingAndVisualize
 ![alt text](https://raw.githubusercontent.com/fjordyo0707/RaytracingAndVisualize/master/img/reflect.png)<br></br>
 #### More complicate structure
 ![alt text](https://raw.githubusercontent.com/fjordyo0707/RaytracingAndVisualize/master/img/some_example.png)<br></br>
-#### Soft Shadow
+#### Soft Shadow and Anti-aliasing
 ![alt text](https://raw.githubusercontent.com/fjordyo0707/RaytracingAndVisualize/master/img/softShadow.png)<br></br>
-#### Anti-Aliasing
-![alt text](https://raw.githubusercontent.com/fjordyo0707/RaytracingAndVisualize/master/img/Anti-aliasing.png)<br></br>
+
+#### Explantion for how I sample
+Anti-aliasing: For one pixel, I sample four ray and interpolate with bicubic method.<br></br>
+Soft Shahow: I sample 1000 points on a disc within a light sphere, and instead of setting Id to zero, I set it with Id*(1-{ratioOfShadow}) 
 
 ## Install Denpendencies
 
@@ -54,7 +56,7 @@ Install OpenCV depend on your IDE or compiler.
 #### Notice
 1. This code does recursion until not hitting anything, so it may take some time if you have too many objects!<br></br>
 2. This code isn't fully optimized, so may look a bit dirty!<br></br> 
-3. Runtime will take few minutes!<br></br>
+3. Runtime will take 3~5 minutes!<br></br>
 
 #### Unix (recommend)
 
