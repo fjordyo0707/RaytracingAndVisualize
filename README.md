@@ -1,13 +1,13 @@
 # Raytracing using OpenCV
 
-Author: Cheng-Yu, Fan
+Author: Cheng-Yu, Fan <br></br>
 Check Github: https://github.com/fjordyo0707/RaytracingAndVisualize
 
 ## Dependencies
 
-#### OpenCV (version >3.0)
-
-#### Cmake (version >2.8)
+###### OpenCV (version >3.0)
+###### Cmake (version >2.8)
+###### C++11
 
 ## Results
 #### Phong Model
@@ -16,9 +16,13 @@ Check Github: https://github.com/fjordyo0707/RaytracingAndVisualize
 #### Shadow
 ![alt text](https://raw.githubusercontent.com/fjordyo0707/RaytracingAndVisualize/master/img/phongWithShadow.png)<br></br>
 #### Reflection
-![alt text](https://raw.githubusercontent.com/fjordyo0707/RaytracingAndVisualize/master/img/output.png)<br></br>
+![alt text](https://raw.githubusercontent.com/fjordyo0707/RaytracingAndVisualize/master/img/reflect.png)<br></br>
 #### More complicate structure
 ![alt text](https://raw.githubusercontent.com/fjordyo0707/RaytracingAndVisualize/master/img/some_example.png)<br></br>
+#### Soft Shadow
+![alt text](https://raw.githubusercontent.com/fjordyo0707/RaytracingAndVisualize/master/img/softShadow.png)<br></br>
+#### Anti-Aliasing
+![alt text](https://raw.githubusercontent.com/fjordyo0707/RaytracingAndVisualize/master/img/Anti-aliasing.png)<br></br>
 
 ## Install Denpendencies
 
@@ -50,6 +54,7 @@ Install OpenCV depend on your IDE or compiler.
 #### Notice
 1. This code does recursion until not hitting anything, so it may take some time if you have too many objects!<br></br>
 2. This code isn't fully optimized, so may look a bit dirty!<br></br> 
+3. Runtime will take few minutes!<br></br>
 
 #### Unix (recommend)
 
@@ -76,5 +81,5 @@ $ ./bin/output <path/to/input.txt> <path/to/output.png>
 #### Resolution: R w h
 #### Sphere: S Ox Oy Oz r
 #### Triangle: T x1 y1 z1 x2 y2 z2 x3 y3 z3
-#### Light position: L x y z
+#### Light position: L x y z r
 #### Material: M r g b Ka Kd Ks exp Reflect
